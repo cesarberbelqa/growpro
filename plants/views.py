@@ -9,25 +9,17 @@ from environment.models import Environment # <-- Adicione este import
 from stage.models import Stage      
 from django.shortcuts import redirect
 from django.contrib import messages
+from .mixins import PlantPrerequisitesMixin
 
 # --- Views para o Frontend ---
 
-class PlantListView(LoginRequiredMixin, ListView):
+class PlantListView(LoginRequiredMixin, PlantPrerequisitesMixin, ListView):
     model = Plant
     template_name = 'plants/plant_list.html'
     context_object_name = 'plants'
 
     def get_queryset(self):
         return Plant.objects.filter(user=self.request.user).select_related('estagio_atual', 'ambiente_atual')
-
-    def get_context_data(self, **kwargs):
-        """ Adiciona dados extras ao contexto do template. """
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        # Passa a informação booleana para o template
-        context['has_environments'] = Environment.objects.filter(user=user).exists()
-        context['has_stages'] = Stage.objects.filter(user=user).exists()
-        return context
 
 class PlantDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Plant
@@ -37,30 +29,24 @@ class PlantDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         plant = self.get_object()
         return self.request.user == plant.user
 
-class PlantCreateView(LoginRequiredMixin, CreateView):
+class PlantCreateView(LoginRequiredMixin, PlantPrerequisitesMixin, CreateView):
     model = Plant
     form_class = PlantForm
     template_name = 'plants/plant_form.html'
     success_url = reverse_lazy('plants:list')
 
-    def dispatch(self, request, *args, **kwargs):
-        """
-        Verifica pré-requisitos antes de mostrar o formulário.
-        Este método é executado antes de qualquer outro na view.
-        """
-        user = request.user
-        has_environments = Environment.objects.filter(user=user).exists()
-        has_stages = Stage.objects.filter(user=user).exists()
+    # Remova o método dispatch() que adicionamos antes.
+    # def dispatch(self, request, *args, **kwargs):
+    #    ...
 
-        if not has_environments:
-            messages.warning(request, 'Você precisa cadastrar pelo menos um Ambiente antes de adicionar uma planta.')
-            return redirect('environment:list') # Redireciona para a lista de ambientes
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
-        if not has_stages:
-            messages.warning(request, 'Você precisa cadastrar pelo menos um Estágio de cultivo antes de adicionar uma planta.')
-            return redirect('stage:list') # Redireciona para a lista de estágios
-
-        return super().dispatch(request, *args, **kwargs)
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 
     def get_form_kwargs(self):

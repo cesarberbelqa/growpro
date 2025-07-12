@@ -17,7 +17,7 @@ class EnvironmentListView(LoginRequiredMixin, ListView):
         """ Adiciona dados extras ao contexto do template. """
         context = super().get_context_data(**kwargs)
         # Passa a informação booleana para o template
-        context['has_stages'] = Stage.objects.filter(user=self.request.user).exists()
+        context['has_stages'] = Stage.objects.exists()
         return context
 
 class EnvironmentCreateView(LoginRequiredMixin, CreateView):

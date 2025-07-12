@@ -16,7 +16,7 @@ class PlantForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Filtra os dropdowns para mostrar apenas os itens do usuário logado
         self.fields['ambiente_atual'].queryset = Environment.objects.filter(user=user)
-        self.fields['estagio_atual'].queryset = Stage.objects.filter(user=user)
+        self.fields['estagio_atual'].queryset = Stage.objects.all()
 
     def clean(self):
         cleaned_data = super().clean()

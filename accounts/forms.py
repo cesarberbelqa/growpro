@@ -6,7 +6,7 @@ from datetime import date, timedelta
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('email', 'first_name', 'last_name', 'data_nascimento', 'pais', 'consentimento_marketing')
+        fields = ('email', 'consentimento_marketing', 'first_name', 'last_name', 'data_nascimento', 'pais')
         widgets = {
             'data_nascimento': forms.DateInput(attrs={'type': 'date'}),
         }
@@ -22,7 +22,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User
-        fields = ('email', 'first_name', 'last_name', 'data_nascimento', 'pais', 'consentimento_marketing', 'is_active', 'is_staff')
+        fields = ('email', 'consentimento_marketing', 'first_name', 'last_name', 'data_nascimento', 'pais', 'is_active', 'is_staff')
         widgets = {
             'data_nascimento': forms.DateInput(attrs={'type': 'date'}),
         }
@@ -33,7 +33,7 @@ class UserProfileForm(forms.ModelForm):
     """
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'data_nascimento', 'pais', 'consentimento_marketing']
+        fields = ['first_name', 'last_name', 'data_nascimento', 'pais']
         widgets = {
             'data_nascimento': forms.DateInput(attrs={'type': 'date'}),
         }

@@ -24,8 +24,8 @@ urlpatterns = [
     path('watering/', include('watering.urls')),
     
     # ADICIONE ESTAS LINHAS
-    path('stages/', include('stage.urls')),
     path('environments/', include('environment.urls')),
+    path('<int:plant_pk>/history/', include('growth_history.urls')),
     # API URLs
     path('api/', include(router.urls)),
 ]
