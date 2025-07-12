@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{% if form.instance.pk %}Editar Planta{% else %}Nova Planta{% endif %}{% endblock %}
+
+{% block content %}
+<h1>{% if form.instance.pk %}Editar Planta: {{ form.instance.nome }}{% else %}Adicionar Nova Planta{% endif %}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="mb-3">
+        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+            <div class="form-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger p-2 mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-success">Salvar</button>
+    <a href="{% url 'plants:list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">Meu Perfil</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Editar Informações</h5>
+                <p class="card-subtitle mb-3 text-muted">Seu e-mail de login é: <strong>{{ user.email }}</strong></p>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Usaremos o CSS global para estilizar os campos com form.as_p -->
+                    {{ form.as_p }}
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Alterar Senha</h5>
+                <p>Para alterar sua senha, use o link abaixo. Você será redirecionado para uma página segura.</p>
+                <a href="{% url 'password_change' %}" class="btn btn-outline-secondary">Alterar minha senha</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{% if form.instance.pk %}Editar Ambiente{% else %}Novo Ambiente{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">
+            {% if form.instance.pk %}
+                Editar Ambiente: {{ form.instance.nome }}
+            {% else %}
+                Adicionar Novo Ambiente de Cultivo
+            {% endif %}
+        </h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="alert alert-danger p-2 mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{% url 'environment:list' %}" class="btn btn-secondary me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-success">Salvar Ambiente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

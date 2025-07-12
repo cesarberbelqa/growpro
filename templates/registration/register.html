@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load countries %}
+
+{% block title %}Cadastrar{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2>Crie sua Conta</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger p-2 mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-success">Cadastrar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

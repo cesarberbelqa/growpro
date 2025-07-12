@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Exclusão de Agendamento{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                Confirmar Exclusão
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Tem certeza que deseja excluir o agendamento de rega para a planta "{{ object.planta.nome }}"?</h5>
+                <p class="card-text">
+                    Esta ação removerá permanentemente as regras de agendamento. Nenhum alerta futuro será enviado para esta planta.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Sim, Excluir Agendamento</button>
+                    <a href="{% url 'watering:list' %}" class="btn btn-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

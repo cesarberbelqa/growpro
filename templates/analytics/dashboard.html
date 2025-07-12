@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard de Análise{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Plantas Ativas</h5>
+                <p class="card-text fs-1 fw-bold">{{ total_plants }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Ambientes</h5>
+                <p class="card-text fs-1 fw-bold">{{ total_environments }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Agendamentos Ativos</h5>
+                <!-- MUDANÇA AQUI: de total_waterings para total_schedules -->
+                <p class="card-text fs-1 fw-bold">{{ total_schedules }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                Plantas por Estágio
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for stage in plants_by_stage %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ stage.estagio_atual__tipo_estagio }}
+                            <span class="badge bg-primary rounded-pill">{{ stage.count }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">Nenhuma planta ativa encontrada.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <!-- Espaço para um futuro gráfico -->
+        <div class="card">
+            <div class="card-header">
+                Consumo de Água (Futuro)
+            </div>
+            <div class="card-body text-center text-muted">
+                Gráfico de consumo será implementado aqui.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

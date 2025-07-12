@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Ambientes de Cultivo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Meus Ambientes de Cultivo (Estufas)</h1>
+    <!-- O botão de criar ambiente não precisa de trava, pois pode ser criado sem estágio -->
+    <a href="{% url 'environment:create' %}" class="btn btn-primary">Novo Ambiente</a>
+</div>
+
+{% if not has_stages %}
+<div class="alert alert-info" role="alert">
+    <strong>Dica:</strong> Você ainda não cadastrou nenhum Estágio. 
+    <a href="{% url 'stage:create' %}" class="alert-link">Crie estágios</a> para poder otimizar seus ambientes para eles.
+</div>
+{% endif %}
+
+
+<div class="row">
+    {% for env in environments %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ env.nome }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ env.localizacao|default:"Sem localização" }}</h6>
+                <ul class="list-unstyled mt-3">
+                    <li><strong>Área:</strong> {{ env.area }} m²</li>
+                    <li><strong>Capacidade:</strong> {{ env.numero_maximo_plantas }} plantas</li>
+                    <li><strong>Otimizado para:</strong> {{ env.estagio_preparado.tipo_estagio|default:"<span class='text-muted'>Todos os estágios</span>"|safe }}</li>
+                </ul>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+                <a href="{% url 'environment:update' env.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                <a href="{% url 'environment:delete' env.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col">
+        <p>Nenhum ambiente de cultivo cadastrado.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

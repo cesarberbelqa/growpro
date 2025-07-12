@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Exclusão de Ambiente{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger text-center">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Atenção! Confirmação de Exclusão</h4>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Tem certeza que deseja excluir permanentemente o ambiente "{{ object.nome }}"?</h5>
+                
+                <p class="card-text mt-3">
+                    Esta ação removerá o ambiente e todas as suas configurações.
+                </p>
+                
+                <p class="text-danger fw-bold">
+                    Qualquer planta que esteja atualmente neste ambiente terá seu campo "Ambiente Atual" definido como nulo. Esta ação não pode ser desfeita.
+                </p>
+
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <a href="{% url 'environment:list' %}" class="btn btn-secondary">Não, voltar para a lista</a>
+                    <button type="submit" class="btn btn-danger">Sim, tenho certeza, excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Exclusão{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                Confirmar Exclusão
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Tem certeza que deseja excluir a planta "{{ object.nome }}"?</h5>
+                <p class="card-text">
+                    Toda a informação associada a esta planta, incluindo seu histórico de crescimento e registros de rega, será permanentemente removida.
+                </p>
+                <p class="text-danger fw-bold">Esta ação é irreversível.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <button type="submit" class="btn btn-danger">Sim, Excluir</button>
+                    <a href="{{ object.get_absolute_url }}" class="btn btn-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
