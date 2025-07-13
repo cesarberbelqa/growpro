@@ -1,38 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}Minhas Plantas{% endblock %}
+{% block title %}Minhas Plantas por Ambiente{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Minhas Plantas</h1>
-    <!-- O botão agora está sempre ativo, pois a página só é acessível se for possível criar plantas -->
     <a href="{% url 'plants:create' %}" class="btn btn-primary">Adicionar Nova Planta</a>
 </div>
 
-{% for plant in plants %}
-<div class="card mb-3">
-    <div class="card-body">
-        <h5 class="card-title">
-            <a href="{{ plant.get_absolute_url }}">{{ plant.nome }} ({{ plant.identificacao }})</a>
-        </h5>
-        <h6 class="card-subtitle mb-2 text-muted">Estágio: {{ plant.estagio_atual.tipo_estagio }}</h6>
-        <p class="card-text">
-            Plantada em: {{ plant.data_plantio|date:"d/m/Y" }}
-            {% if plant.precisa_mudar_estagio %}
-                <span class="badge bg-danger">Atenção: Precisa mudar de estágio!</span>
+{% for environment, plants_in_env in grouped_plants.items %}
+    <div class="mb-5">
+        <h2 class="mb-3 border-bottom pb-2">
+            {% if environment == 'Sem Ambiente' %}
+                <i class="fas fa-question-circle text-muted"></i> Sem Ambiente Definido
+            {% else %}
+                <i class="fas fa-seedling text-success"></i> Ambiente: {{ environment.nome }}
             {% endif %}
-        </p>
-        <a href="{{ plant.get_absolute_url }}" class="card-link">Detalhes</a>
-        <a href="{% url 'plants:update' plant.pk %}" class="card-link">Editar</a>
-         <a href="{% url 'growth_history:create' plant_pk=plant.pk %}" class="card-link">
-            + Histórico
-        </a>
+        </h2>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            {% for plant in plants_in_env %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{{ plant.get_absolute_url }}">{{ plant.nome }}</a>
+                            </h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ plant.identificacao }}</h6>
+                            <p class="card-text mb-1">
+                                <strong>Estágio:</strong> {{ plant.estagio_atual.tipo_estagio }}
+                            </p>
+                            <p class="card-text small text-muted">
+                                Plantada em: {{ plant.data_plantio|date:"d/m/Y" }}
+                            </p>
+                            {% if plant.is_stage_incompatible %}
+                                <div class="alert alert-info p-2 small mt-2" role="alert">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Aviso:</strong> Estágio incompatível com o ambiente!
+                                </div>
+                            {% endif %}                            
+                            {% if plant.precisa_mudar_estagio %}
+                                <div class="alert alert-warning p-2 small" role="alert">
+                                    <strong>Atenção:</strong> Mudar estágio!
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0 text-end">
+                            
+                             <a href="{{ plant.get_absolute_url }}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
+                             <a href="{% url 'growth_history:create' plant_pk=plant.pk %}" class="btn btn-sm btn-outline-success" title="Adicionar Histórico">+ Histórico</a>
+                             <a href="{% url 'plants:update' plant.pk %}" class="btn btn-sm btn-outline-primary" title="Editar Planta">Editar</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
-</div>
-{% empty %}
-    <div class="text-center p-5">
-        <h4>Nenhuma planta cadastrada ainda.</h4>
-        <p>Clique no botão "Adicionar Nova Planta" para começar.</p>
-    </div>
-{% endfor %}
+    {% empty %}
+        <div class="text-center p-5">
+            <h4>Nenhuma planta cadastrada ainda.</h4>
+            <p>Clique no botão "Adicionar Nova Planta" para começar.</p>
+        </div>
+    {% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<!-- Adicione FontAwesome para os ícones, se ainda não tiver -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 {% endblock %}

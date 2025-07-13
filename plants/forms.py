@@ -2,6 +2,7 @@ from django import forms
 from .models import Plant
 from environment.models import Environment
 from stage.models import Stage
+from django.utils import timezone # <-- Adicione este import
 
 class PlantForm(forms.ModelForm):
     class Meta:
@@ -18,15 +19,38 @@ class PlantForm(forms.ModelForm):
         self.fields['ambiente_atual'].queryset = Environment.objects.filter(user=user)
         self.fields['estagio_atual'].queryset = Stage.objects.all()
 
-    def clean(self):
-        cleaned_data = super().clean()
-        ambiente = cleaned_data.get('ambiente_atual')
-        estagio = cleaned_data.get('estagio_atual')
+        # ==========================================================
+        #           LÓGICA PARA PREENCHER A DATA
+        # ==========================================================
+        # Se o formulário é para criar uma nova planta (não tem instância salva ainda)
+        if not self.instance.pk:
+            # Define o valor inicial do campo 'data_plantio' para a data de hoje.
+            self.fields['data_plantio'].initial = timezone.now().date()
 
-        if ambiente and estagio:
-            if ambiente.estagio_preparado and ambiente.estagio_preparado != estagio:
-                self.add_error('ambiente_atual',
-                    f"Atenção: O ambiente '{ambiente.nome}' é preparado para o estágio "
-                    f"'{ambiente.estagio_preparado.tipo_estagio}', que é diferente do estágio da planta."
+    def clean_ambiente_atual(self):
+        """
+        Validação específica para o campo 'ambiente_atual'.
+        """
+        ambiente = self.cleaned_data.get('ambiente_atual')
+
+        if not ambiente:
+            return ambiente # Se nenhum ambiente for selecionado, não há o que validar.
+
+        # Conta o número de plantas já existentes no ambiente
+        plant_count = Plant.objects.filter(ambiente_atual=ambiente).count()
+
+
+        # Lógica para edição: se estivermos editando uma planta que já está neste ambiente,
+        # a contagem não deve incluí-la, pois não estamos adicionando uma nova planta.
+        if self.instance and self.instance.pk and self.instance.ambiente_atual == ambiente:
+             # Nenhuma validação necessária, pois a planta já ocupa um espaço.
+             pass
+        else:
+            # Lógica para criação ou mudança de ambiente
+            if plant_count >= ambiente.numero_maximo_plantas:
+                raise forms.ValidationError(
+                    f"O ambiente '{ambiente.nome}' já atingiu sua capacidade máxima de "
+                    f"{ambiente.numero_maximo_plantas} planta(s)."
                 )
-        return cleaned_data
+        
+        return ambiente

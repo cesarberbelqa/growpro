@@ -26,7 +26,13 @@
                 <h6 class="card-subtitle mb-2 text-muted">{{ env.localizacao|default:"Sem localização" }}</h6>
                 <ul class="list-unstyled mt-3">
                     <li><strong>Área:</strong> {{ env.area }} m²</li>
-                    <li><strong>Capacidade:</strong> {{ env.numero_maximo_plantas }} plantas</li>
+                    <li>
+                        <strong>Ocupação:</strong> 
+                        <span class="fw-bold {% if env.is_full %}text-danger{% else %}text-success{% endif %}">
+                            {{ env.current_plant_count }} / {{ env.numero_maximo_plantas }}
+                        </span>
+                        plantas
+                    </li>
                     <li><strong>Otimizado para:</strong> {{ env.estagio_preparado.tipo_estagio|default:"<span class='text-muted'>Todos os estágios</span>"|safe }}</li>
                 </ul>
             </div>

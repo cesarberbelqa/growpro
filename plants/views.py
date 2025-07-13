@@ -10,16 +10,47 @@ from stage.models import Stage
 from django.shortcuts import redirect
 from django.contrib import messages
 from .mixins import PlantPrerequisitesMixin
+from collections import defaultdict
+from environment.models import Environment
 
 # --- Views para o Frontend ---
 
 class PlantListView(LoginRequiredMixin, PlantPrerequisitesMixin, ListView):
-    model = Plant
+    # Não vamos mais usar o 'model' e 'queryset' padrão da ListView,
+    # pois vamos construir nosso próprio contexto.
     template_name = 'plants/plant_list.html'
-    context_object_name = 'plants'
+    context_object_name = 'grouped_plants' # Novo nome para o contexto
 
     def get_queryset(self):
-        return Plant.objects.filter(user=self.request.user).select_related('estagio_atual', 'ambiente_atual')
+        """
+        Sobrescrevemos o queryset para agrupar as plantas por ambiente.
+        """
+        # Filtra todas as plantas do usuário
+        plants = Plant.objects.filter(user=self.request.user).select_related(
+            'ambiente_atual', 'estagio_atual'
+        ).order_by('ambiente_atual__nome', 'nome')
+        
+        # Cria um dicionário para agrupar as plantas
+        grouped = defaultdict(list)
+        
+        # Plantas sem ambiente definido
+        unassigned_plants = []
+        
+        for plant in plants:
+            if plant.ambiente_atual:
+                grouped[plant.ambiente_atual].append(plant)
+            else:
+                unassigned_plants.append(plant)
+        
+        # Converte o defaultdict para um dict normal para o template
+        # e o ordena pelo nome do ambiente
+        sorted_grouped = dict(sorted(grouped.items(), key=lambda item: item[0].nome))
+
+        # Adiciona as plantas sem ambiente em uma chave especial
+        if unassigned_plants:
+            sorted_grouped['Sem Ambiente'] = unassigned_plants
+        
+        return sorted_grouped
 
 class PlantDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Plant
@@ -62,6 +93,7 @@ class PlantUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Plant
     form_class = PlantForm
     template_name = 'plants/plant_form.html'
+    success_url = reverse_lazy('plants:list')
 
     def test_func(self):
         plant = self.get_object()

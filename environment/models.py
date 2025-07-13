@@ -16,3 +16,12 @@ class Environment(models.Model):
         
     def get_absolute_url(self):
         return reverse('environment:update', kwargs={'pk': self.pk})
+
+    @property
+    def current_plant_count(self):
+        # Acessa a contagem através do related_name 'plants' que o Django cria
+        return self.plants.count()
+        
+    @property
+    def is_full(self):
+        return self.current_plant_count >= self.numero_maximo_plantas        

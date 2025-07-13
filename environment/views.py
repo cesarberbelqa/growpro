@@ -4,6 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Environment
 from .forms import EnvironmentForm
 from stage.models import Stage
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 
 class EnvironmentListView(LoginRequiredMixin, ListView):
     model = Environment
@@ -58,3 +60,15 @@ class EnvironmentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
     def test_func(self):
         environment = self.get_object()
         return self.request.user == environment.user
+
+
+# API para verificar a capacidade do ambiente
+def environment_capacity_api(request, pk):
+    # Garante que o usuário só pode consultar seus próprios ambientes
+    environment = get_object_or_404(Environment, pk=pk, user=request.user)
+    data = {
+        'current_plant_count': environment.current_plant_count,
+        'numero_maximo_plantas': environment.numero_maximo_plantas,
+        'is_full': environment.is_full,
+    }
+    return JsonResponse(data)        

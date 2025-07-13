@@ -12,7 +12,8 @@ class EnvironmentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         # Filtra o queryset para mostrar apenas os estágios do usuário logado
-        self.fields['estagio_preparado'].queryset = Stage.objects.all()
+        stages_queryset = Stage.objects.all()
+        self.fields['estagio_preparado'].queryset = stages_queryset
 
         # Se não houver estágios, remove o campo do formulário
         if not stages_queryset.exists():
