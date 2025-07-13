@@ -9,4 +9,5 @@ urlpatterns = [
     path('new/', views.PlantCreateView.as_view(), name='create'),
     path('<int:pk>/edit/', views.PlantUpdateView.as_view(), name='update'),
     path('<int:pk>/delete/', views.PlantDeleteView.as_view(), name='delete'),
+    path('<int:pk>/transition/', views.TransitionStageView.as_view(), name='transition_stage'),
 ]

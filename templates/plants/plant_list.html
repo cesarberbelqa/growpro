@@ -58,9 +58,20 @@
                                 </div>
                             {% endif %}                            
                             {% if plant.precisa_mudar_estagio %}
-                                <div class="alert alert-warning p-2 small" role="alert">
-                                    <strong>Atenção:</strong> Mudar estágio!
-                                </div>
+                                {% if plant.proximo_estagio_disponivel %}
+                                    <!-- Caso 1: Precisa mudar E tem um próximo estágio definido -->
+                                    <div class="alert alert-success p-2 small mt-2 d-grid" role="alert">
+                                        <a href="{% url 'plants:transition_stage' plant.pk %}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-arrow-right"></i> Mudar para: <strong>{{ plant.proximo_estagio_disponivel.tipo_estagio }}</strong>
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <!-- Caso 2: Precisa mudar MAS não tem próximo estágio definido -->
+                                    <div class="alert alert-warning p-2 small mt-2" role="alert">
+                                        <i class="fas fa-clock"></i>
+                                        <strong>Atenção:</strong> Mudar estágio! (Final do ciclo)
+                                    </div>
+                                {% endif %}
                             {% endif %}
                         </div>
                         <div class="card-footer bg-transparent border-top-0 text-end">

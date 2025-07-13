@@ -1,17 +1,20 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views import View
 from .models import Plant
 from .forms import PlantForm
 from rest_framework import viewsets
 from .serializers import PlantSerializer
 from environment.models import Environment # <-- Adicione este import
 from stage.models import Stage      
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from collections import defaultdict
 from environment.models import Environment
 from core.mixins import StageExistsRequiredMixin
+from growth_history.models import GrowthHistory
+from django.utils import timezone
 
 # --- Views para o Frontend ---
 
@@ -28,7 +31,7 @@ class PlantListView(LoginRequiredMixin, ListView):
         # Filtra todas as plantas do usuário
         plants = Plant.objects.filter(user=self.request.user).select_related(
             'ambiente_atual', 'estagio_atual'
-        ).order_by('ambiente_atual__nome', 'nome')
+        ).order_by('data_plantio', 'nome') # <-- Ordena por data de plantio e nome
         
         # Cria um dicionário para agrupar as plantas
         grouped = defaultdict(list)
@@ -44,7 +47,7 @@ class PlantListView(LoginRequiredMixin, ListView):
         
         # Converte o defaultdict para um dict normal para o template
         # e o ordena pelo nome do ambiente
-        sorted_grouped = dict(sorted(grouped.items(), key=lambda item: item[0].nome))
+        sorted_grouped = dict(sorted(grouped.items(), key=lambda item: item[0].id))
 
         # Adiciona as plantas sem ambiente em uma chave especial
         if unassigned_plants:
@@ -132,3 +135,37 @@ class PlantViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Associa o usuário autenticado ao criar um novo objeto
         serializer.save(user=self.request.user)
+
+class TransitionStageView(LoginRequiredMixin, View):
+    """ View para processar a transição de estágio de uma planta. """
+    def get(self, request, *args, **kwargs):
+        planta = get_object_or_404(Plant, pk=self.kwargs['pk'], user=request.user)
+        
+        proximo_estagio = planta.proximo_estagio_disponivel
+        
+        if not proximo_estagio:
+            messages.error(request, 'Não há um próximo estágio definido para o estágio atual desta planta.')
+            return redirect('plants:list')
+            
+        if not planta.precisa_mudar_estagio:
+            messages.warning(request, 'Esta planta ainda não atingiu o tempo necessário para mudar de estágio.')
+            return redirect('plants:list')
+
+        # Armazena o estágio antigo para o registro de histórico
+        estagio_antigo = planta.estagio_atual.tipo_estagio
+
+        # Executa a transição
+        planta.estagio_atual = proximo_estagio
+        planta.data_ultima_mudanca_estagio = timezone.now().date()
+        planta.save()
+        
+        # Cria um registro no histórico
+        GrowthHistory.objects.create(
+            user=request.user,
+            planta=planta,
+            tipo_evento="Mudança de Estágio",
+            observacoes=f"A planta foi movida do estágio '{estagio_antigo}' para '{proximo_estagio.tipo_estagio}'."
+        )
+
+        messages.success(request, f"A planta '{planta.nome}' foi movida para o estágio '{proximo_estagio.tipo_estagio}' com sucesso!")
+        return redirect('plants:list')        

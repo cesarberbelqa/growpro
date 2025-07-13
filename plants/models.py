@@ -19,6 +19,10 @@ class Plant(models.Model):
     data_plantio = models.DateField()
     observacoes = models.TextField(blank=True)
     status = models.CharField(max_length=50, default="Ativa")
+    data_ultima_mudanca_estagio = models.DateField(
+        null=True, blank=True, 
+        help_text="Data da última transição de estágio. Preenchido automaticamente."
+    )
 
     class Meta:
         unique_together = ('user', 'identificacao')
@@ -30,17 +34,32 @@ class Plant(models.Model):
         return reverse('plants:detail', kwargs={'pk': self.pk})
 
     @property
+    def data_base_calculo_estagio(self):
+        """ Retorna a data base para o cálculo da duração do estágio. """
+        # Se houver data de última mudança, usa ela. Senão, usa a data de plantio.
+        return self.data_ultima_mudanca_estagio or self.data_plantio
+
+    @property
     def data_proxima_mudanca(self):
+        """ Calcula a data da próxima mudança com base na nova data de referência. """
         if self.estagio_atual and self.estagio_atual.duracao_em_dias:
-            return self.data_plantio + timedelta(days=self.estagio_atual.duracao_em_dias)
+            return self.data_base_calculo_estagio + timedelta(days=self.estagio_atual.duracao_em_dias)
         return None
 
     @property
     def precisa_mudar_estagio(self):
+        """ Verifica se o tempo do estágio atual expirou. """
         prox_mudanca = self.data_proxima_mudanca
         if prox_mudanca:
             return timezone.now().date() >= prox_mudanca
         return False
+        
+    @property
+    def proximo_estagio_disponivel(self):
+        """ Retorna o próximo estágio definido na tabela de transição, se houver. """
+        if self.estagio_atual:
+            return self.estagio_atual.proximo_estagio_definido
+        return None
 
     # ==========================================================
     #           NOVA PROPRIEDADE PARA VERIFICAÇÃO
