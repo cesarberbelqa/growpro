@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         alerts.forEach(function(alert) {
             // Define o tempo em milissegundos (ex: 5000ms = 5 segundos)
-            const dismissTime = 5000;
+            const dismissTime = 2000;
 
             setTimeout(function() {
                 // Adiciona uma classe para iniciar a animação de fade out
