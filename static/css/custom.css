@@ -155,3 +155,38 @@ form label {
 .alert.fade-out {
     opacity: 0;
 }
+
+/* ... (outros estilos) ... */
+
+
+/* ========================================================== */
+/*           ESTILIZAÇÃO DAS MENSAGENS FLUTUANTES             */
+/* ========================================================== */
+
+.message-container-floating {
+    position: fixed; /* Posição fixa em relação à janela do navegador */
+    top: 6rem;       /* Distância do topo (um pouco abaixo da navbar de 5rem) */
+    right: 1.5rem;   /* Distância da direita */
+    z-index: 1056;   /* Um z-index alto para ficar sobre a maioria dos elementos (Bootstrap usa 1055 para modais) */
+    width: 100%;
+    max-width: 680px; /* Largura máxima para as notificações */
+    pointer-events: none; /* Permite clicar através do container transparente */
+}
+
+/* Os alertas dentro do container devem ser clicáveis */
+.message-container-floating .alert {
+    pointer-events: auto; /* Restaura a capacidade de clicar no alerta */
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+    border: none;
+}
+
+/* === Alertas e Mensagens (Animação de Fade Out) === */
+.alert {
+    /* Adiciona uma transição suave para a opacidade */
+    transition: opacity 0.5s ease-out;
+}
+
+/* Classe para iniciar a aninmação de desaparecimento */
+.alert.fade-out {
+    opacity: 0;
+}
