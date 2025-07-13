@@ -14,42 +14,52 @@
             <tr>
                 <th>Planta</th>
                 <th>Frequência</th>
-                <th>Próxima Rega</th>
-                <th>Status</th>
+                <!-- ========================================================== -->
+                <!--            NOVA COLUNA PARA QUANTIDADE DE ÁGUA             -->
+                <!-- ========================================================== -->
+                <th class="text-center">Água (ml)</th>
+                <th class="text-center">Próxima Rega</th>
+                <th class="text-center">Status</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for schedule in schedules %}
             <tr>
-                <td><a href="{{ schedule.planta.get_absolute_url }}">{{ schedule.planta.nome }}</a></td>
-                <td>{{ schedule.get_frequencia_display }}
+                <td class="align-middle"><a href="{{ schedule.planta.get_absolute_url }}">{{ schedule.planta.nome }}</a></td>
+                <td class="align-middle">
+                    {{ schedule.get_frequencia_display }}
                     {% if schedule.frequencia == 'INTERVALO' %}
                         ({{ schedule.dias_intervalo }} dias)
                     {% endif %}
                 </td>
-                <td>
+                <!-- ========================================================== -->
+                <!--          EXIBINDO O DADO DA QUANTIDADE DE ÁGUA             -->
+                <!-- ========================================================== -->
+                <td class="align-middle text-center">{{ schedule.quantidade_agua_ml }}</td>
+                <td class="align-middle text-center">
                     {% if schedule.proxima_rega %}
                         {{ schedule.proxima_rega|date:"d/m/Y" }}
                     {% else %}
                         -
                     {% endif %}
                 </td>
-                <td>
+                <td class="align-middle text-center">
                     {% if schedule.is_active %}
                         <span class="badge bg-success">Ativo</span>
                     {% else %}
                         <span class="badge bg-secondary">Inativo</span>
                     {% endif %}
                 </td>
-                <td>
-                    <a href="{% url 'watering:update' schedule.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
-                    <a href="{% url 'watering:delete' schedule.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                <td class="align-middle">
+                    <a href="{% url 'watering:update' schedule.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">Editar</a>
+                    <a href="{% url 'watering:clone' schedule.pk %}" class="btn btn-sm btn-outline-info" title="Clonar">Clonar</a>
+                    <a href="{% url 'watering:delete' schedule.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">Excluir</a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5" class="text-center">Nenhum agendamento de rega encontrado.</td>
+                <td colspan="6" class="text-center">Nenhum agendamento de rega encontrado.</td>
             </tr>
             {% endfor %}
         </tbody>

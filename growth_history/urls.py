@@ -8,4 +8,5 @@ urlpatterns = [
     path('new/', views.GrowthHistoryCreateView.as_view(), name='create'),
     # URL para deletar um registro específico
     path('<int:pk>/delete/', views.GrowthHistoryDeleteView.as_view(), name='delete'),
+    path('<int:pk>/edit/', views.GrowthHistoryUpdateView.as_view(), name='update'),
 ]

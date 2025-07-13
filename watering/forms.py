@@ -37,3 +37,33 @@ class WateringScheduleForm(forms.ModelForm):
                 self.add_error('dias_intervalo', 'Este campo é obrigatório quando a frequência é "A cada X dias".')
         
         return cleaned_data
+
+# ==========================================================
+#               NOVO FORMULÁRIO PARA CLONAGEM
+# ==========================================================
+class CloneWateringScheduleForm(forms.Form):
+    # Usamos um ModelMultipleChoiceField para permitir a seleção de uma ou mais plantas
+    plantas_destino = forms.ModelMultipleChoiceField(
+        queryset=Plant.objects.none(), # O queryset será definido na view
+        widget=forms.CheckboxSelectMultiple,
+        required=True,
+        label="Selecione as plantas para as quais deseja clonar este agendamento"
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        agendamento_a_clonar = kwargs.pop('source_schedule')
+        super().__init__(*args, **kwargs)
+
+        # Define o queryset para o campo 'plantas_destino'
+        # Excluímos:
+        # 1. A planta original do agendamento
+        # 2. Plantas que já possuem um agendamento de rega
+        self.fields['plantas_destino'].queryset = Plant.objects.filter(
+            user=user
+        ).exclude(
+            pk=agendamento_a_clonar.planta.pk
+        ).exclude(
+            watering_schedule__isnull=False
+        )        
+        print(self.fields['plantas_destino'].queryset)

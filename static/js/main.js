@@ -114,8 +114,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
+    /**
+     * Função para fazer as mensagens de notificação do Django desaparecerem automaticamente.
+     */
+    function autoDismissMessages() {
+        const messageContainer = document.getElementById('message-container');
+        if (!messageContainer) return; // Sai se não houver container de mensagens
+
+        // Seleciona todos os alertas dentro do container
+        const alerts = messageContainer.querySelectorAll('.alert');
+
+        alerts.forEach(function(alert) {
+            // Define o tempo em milissegundos (ex: 5000ms = 5 segundos)
+            const dismissTime = 5000;
+
+            setTimeout(function() {
+                // Adiciona uma classe para iniciar a animação de fade out
+                alert.classList.add('fade-out');
+
+                // Após a animação terminar (ex: 0.5s), remove o elemento
+                setTimeout(function() {
+                    // O alerta pode já ter sido fechado pelo usuário, então verificamos se ainda existe
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 500); // 500ms corresponde à duração da transição no CSS
+                
+            }, dismissTime);
+        });
+    }
+
+
     // --- Chamada de Todas as Funções de Inicialização ---
     handleWateringScheduleForm();
     handleEnvironmentCapacityCheck(); // <-- Adicionamos a nova função aqui
     initializeTooltips();
+    autoDismissMessages();
 });

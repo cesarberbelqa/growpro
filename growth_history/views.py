@@ -1,5 +1,5 @@
 from django.urls import reverse
-from django.views.generic import CreateView, DeleteView
+from django.views.generic import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404
 
@@ -47,3 +47,25 @@ class GrowthHistoryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteVie
         """ Redireciona de volta para a página de detalhes da planta. """
         planta_pk = self.object.planta.pk
         return reverse('plants:detail', kwargs={'pk': planta_pk})
+
+class GrowthHistoryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = GrowthHistory
+    form_class = GrowthHistoryForm
+    template_name = 'growth_history/history_form.html' # Reutilizaremos o mesmo formulário
+    context_object_name = 'history_entry'
+
+    def test_func(self):
+        """ Garante que o usuário só possa editar seus próprios registros. """
+        entry = self.get_object()
+        return self.request.user == entry.user
+
+    def get_context_data(self, **kwargs):
+        """ Adiciona a planta ao contexto para o template. """
+        context = super().get_context_data(**kwargs)
+        # O objeto do histórico (self.object) já tem a planta, então podemos acessá-la
+        context['planta'] = self.object.planta
+        return context
+
+    def get_success_url(self):
+        """ Redireciona de volta para a página de detalhes da planta. """
+        return reverse('plants:detail', kwargs={'pk': self.object.planta.pk})        

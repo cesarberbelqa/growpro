@@ -7,6 +7,7 @@
 
 <form method="post">
     {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
     {% for field in form %}
     <div class="mb-3">
         <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
@@ -21,6 +22,12 @@
     {% endfor %}
 
     <button type="submit" class="btn btn-success">Salvar</button>
-    <a href="{% url 'plants:list' %}" class="btn btn-secondary">Cancelar</a>
+    {% if form.instance.pk %}
+        <!-- Se estiver editando, o 'next' pode ser a lista ou o detalhe. O 'get_absolute_url' é um bom fallback. -->
+        <a href="{{ next|default:form.instance.get_absolute_url }}" class="btn btn-secondary me-2">Cancelar</a>
+    {% else %}
+        <!-- Se estiver criando, o único destino seguro para cancelar é a lista. -->
+        <a href="{% url 'plants:list' %}" class="btn btn-secondary me-2">Cancelar</a>
+    {% endif %}
 </form>
 {% endblock %}

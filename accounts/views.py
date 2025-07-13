@@ -4,11 +4,30 @@ from .forms import CustomUserCreationForm, UserProfileForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 
 class RegisterView(CreateView):
     form_class = CustomUserCreationForm
-    success_url = reverse_lazy('login')
+    # A success_url não será mais usada diretamente, pois faremos o redirect manual
+    # success_url = reverse_lazy('login') 
     template_name = 'registration/register.html'
+
+    def form_valid(self, form):
+        """
+        Este método é chamado quando o formulário de criação é válido.
+        Vamos sobrescrevê-lo para logar o usuário após o registro.
+        """
+        # Salva o novo usuário no banco de dados e o retorna
+        user = form.save()
+        
+        # Loga o usuário recém-criado na sessão atual
+        login(self.request, user)
+        
+        # Adiciona uma mensagem de boas-vindas (opcional)
+        messages.success(self.request, f"Bem-vindo ao GrowPro, {user.first_name}! Seu registro foi concluído com sucesso.")
+        
+        # Redireciona para a página principal ou dashboard
+        return redirect('home') # Ou 'plants:list', ou qualquer outra página que preferir
 
 @login_required
 def profile_view(request):

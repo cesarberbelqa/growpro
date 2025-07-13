@@ -3,75 +3,112 @@
 {% block title %}Detalhes de {{ plant.nome }}{% endblock %}
 
 {% block content %}
-<!-- ... (cabeçalho da página inalterado) ... -->
+<!-- CABEÇALHO DA PÁGINA -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>{{ plant.nome }} <small class="text-muted">({{ plant.identificacao }})</small></h1>
     <div>
-        <a href="{% url 'plants:list' %}" class="btn btn-outline-secondary">Voltar</a>
         <a href="{% url 'plants:update' plant.pk %}" class="btn btn-outline-primary">Editar</a>
         <a href="{% url 'plants:delete' plant.pk %}" class="btn btn-outline-danger">Excluir</a>
     </div>
 </div>
 
-
-<div class="row">
-    <!-- Coluna Principal (Esquerda) -->
-    <div class="col-md-8">
-        <!-- Histórico de Crescimento -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Histórico de Crescimento</span>
-                <!-- BOTÃO PARA ADICIONAR NOVO EVENTO -->
-                <a href="{% url 'growth_history:create' plant_pk=plant.pk %}" class="btn btn-sm btn-success">
-                    + Adicionar Evento
-                </a>
-            </div>
+<!-- CARD DE RESUMO E AÇÕES - AGORA OCUPA A LARGURA TOTAL -->
+<div class="card mb-4">
+    <div class="row g-0">
+        <!-- Coluna de Informações -->
+        <div class="col-md-8">
             <div class="card-body">
-                {% if not plant.historico.all %}
-                    <p class="text-center text-muted mt-3">Nenhum evento registrado no histórico. Clique em "+ Adicionar Evento" para começar.</p>
-                {% else %}
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Evento</th>
-                                <th>Observações</th>
-                                <th>Foto</th>
-                                <th></th> <!-- Coluna para ações -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for entry in plant.historico.all %}
-                            <tr>
-                                <td class="align-middle">{{ entry.data_hora_evento|date:"d/m/Y H:i" }}</td>
-                                <td class="align-middle">{{ entry.tipo_evento }}</td>
-                                <td class="align-middle text-pre-wrap">{{ entry.observacoes }}</td>
-                                <td class="align-middle">
-                                    {% if entry.foto %}
-                                        <a href="{{ entry.foto.url }}" target="_blank">
-                                            <img src="{{ entry.foto.url }}" alt="Foto do evento" style="max-height: 50px; max-width: 50px; object-fit: cover;">
-                                        </a>
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td class="align-middle text-end">
-                                    <!-- BOTÃO PARA DELETAR O EVENTO -->
-                                    <a href="{% url 'growth_history:delete' plant_pk=plant.pk pk=entry.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir evento">
-                                        ×
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% endif %}
+                <h5 class="card-title">Resumo da Planta</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item ps-0"><strong>Status:</strong> <span class="badge bg-success">{{ plant.status }}</span></li>
+                    <li class="list-group-item ps-0"><strong>Data do Plantio:</strong> {{ plant.data_plantio|date:"d/m/Y" }}</li>
+                    <li class="list-group-item ps-0">
+                        <strong>Ambiente Atual:</strong> 
+                        {% if plant.ambiente_atual %}
+                            {{ plant.ambiente_atual.nome }}
+                        {% else %}
+                            <span class="text-muted">Nenhum</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item ps-0"><strong>Estágio Atual:</strong> {{ plant.estagio_atual.tipo_estagio }}</li>
+                </ul>
             </div>
         </div>
-        <!-- ... (card de regas inalterado) ... -->
+        <!-- Coluna de Ações (Ex: Regar Agora) -->
+        <div class="col-md-4 d-flex align-items-center justify-content-center p-3 border-start">
+            <form action="{% url 'watering:water_now' plant_pk=plant.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-tint"></i> Regar Agora
+                </button>
+            </form>
+        </div>
     </div>
-
-    <!-- Coluna Lateral (Direita) -->
-    <!-- ... (código da coluna lateral inalterado) ... -->
 </div>
+
+<!-- ALERTA DE MUDANÇA DE ESTÁGIO (se necessário) -->
+{% if plant.precisa_mudar_estagio and plant.proximo_estagio_disponivel %}
+<div class="alert alert-success d-grid" role="alert">
+    <a href="{% url 'plants:transition_stage' plant.pk %}" class="btn btn-success">
+        <i class="fas fa-arrow-right"></i> Mudar para o próximo estágio: <strong>{{ plant.proximo_estagio_disponivel.tipo_estagio }}</strong>
+    </a>
+</div>
+{% endif %}
+
+
+<!-- TABELA DE HISTÓRICO DE CRESCIMENTO - AGORA OCUPA A LARGURA TOTAL -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Histórico de Crescimento</span>
+        <a href="{% url 'growth_history:create' plant_pk=plant.pk %}" class="btn btn-sm btn-success">
+            + Adicionar Evento
+        </a>
+    </div>
+    <div class="card-body p-0"> <!-- p-0 remove o padding para a tabela encostar nas bordas -->
+        {% if not plant.historico.all %}
+            <p class="text-center text-muted p-4">Nenhum evento registrado no histórico.</p>
+        {% else %}
+            <div class="table-responsive"> <!-- Garante que a tabela seja rolável em telas pequenas -->
+                <table class="table table-striped table-hover mb-0"> <!-- mb-0 remove a margem inferior -->
+                    <thead>
+                        <tr>
+                            <th scope="col">Data/Hora</th>
+                            <th scope="col">Evento</th>
+                            <th scope="col">Observações</th>
+                            <th scope="col" class="text-center">Foto</th>
+                            <th scope="col" class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in plant.historico.all %}
+                        <tr>
+                            <td class="align-middle">{{ entry.data_hora_evento|date:"d/m/Y H:i" }}</td>
+                            <td class="align-middle">{{ entry.tipo_evento }}</td>
+                            <td class="align-middle text-pre-wrap">{{ entry.observacoes }}</td>
+                            <td class="align-middle text-center">
+                                {% if entry.foto %}
+                                    <a href="{{ entry.foto.url }}" target="_blank" title="Ver imagem ampliada">
+                                        <img src="{{ entry.foto.url }}" alt="Foto do evento" style="max-height: 40px; max-width: 40px; object-fit: cover; border-radius: 4px;">
+                                    </a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="align-middle text-end">
+                                <a href="{% url 'growth_history:update' plant_pk=plant.pk pk=entry.pk %}" class="btn btn-sm btn-outline-primary" title="Editar evento">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                <a href="{% url 'growth_history:delete' plant_pk=plant.pk pk=entry.pk %}" class="btn btn-sm btn-outline-danger ms-1" title="Excluir evento">
+                                    ×
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 {% endblock %}

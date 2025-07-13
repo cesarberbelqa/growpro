@@ -103,7 +103,6 @@ class PlantUpdateView(LoginRequiredMixin, StageExistsRequiredMixin, UserPassesTe
     model = Plant
     form_class = PlantForm
     template_name = 'plants/plant_form.html'
-    success_url = reverse_lazy('plants:list')
 
     def test_func(self):
         plant = self.get_object()
@@ -113,6 +112,32 @@ class PlantUpdateView(LoginRequiredMixin, StageExistsRequiredMixin, UserPassesTe
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+    
+    def get_success_url(self):
+        """
+        Redireciona para a URL passada no campo 'next', ou para a lista de plantas
+        como um fallback de segurança.
+        """
+        # Procura por um parâmetro 'next' no POST do formulário
+        next_url = self.request.POST.get('next', None)
+        if next_url:
+            # Uma verificação de segurança básica para evitar redirecionamento para outros sites
+            # (Open Redirect Attack). Isso garante que a URL é relativa ao nosso site.
+            # if next_url.startswith('/'):
+            return next_url 
+        
+        # Se 'next' não for fornecido ou for inválido, retorna para a lista de plantas.
+        return reverse_lazy('plants:list')
+
+    def get_context_data(self, **kwargs):
+        """
+        Adiciona a URL da página atual ao contexto para ser usada no formulário.
+        """
+        context = super().get_context_data(**kwargs)
+        # request.META.get('HTTP_REFERER') pega a URL da página anterior.
+        # Usamos request.get_full_path() como fallback se o referer não estiver disponível.
+        context['next'] = self.request.META.get('HTTP_REFERER', self.request.get_full_path())
+        return context
 
 class PlantDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Plant
