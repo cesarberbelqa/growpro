@@ -5,14 +5,16 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Meus Ambientes de Cultivo (Estufas)</h1>
-    <!-- O botão de criar ambiente não precisa de trava, pois pode ser criado sem estágio -->
-    <a href="{% url 'environment:create' %}" class="btn btn-primary">Novo Ambiente</a>
+    
+    {% if has_stages %}
+        <!-- O botão de criar ambiente não precisa de trava, pois pode ser criado sem estágio -->
+        <a href="{% url 'environment:create' %}" class="btn btn-primary">Novo Ambiente</a>
+    {% endif %}
 </div>
 
 {% if not has_stages %}
 <div class="alert alert-info" role="alert">
-    <strong>Dica:</strong> Você ainda não cadastrou nenhum Estágio. 
-    <a href="{% url 'stage:create' %}" class="alert-link">Crie estágios</a> para poder otimizar seus ambientes para eles.
+    <strong>Dica:</strong> Não existe nenhum estágio cadastrado. Favor entrar em contato com o administrador do sistema para cadastrar os estágios necessários.
 </div>
 {% endif %}
 

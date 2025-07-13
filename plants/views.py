@@ -9,13 +9,13 @@ from environment.models import Environment # <-- Adicione este import
 from stage.models import Stage      
 from django.shortcuts import redirect
 from django.contrib import messages
-from .mixins import PlantPrerequisitesMixin
 from collections import defaultdict
 from environment.models import Environment
+from core.mixins import StageExistsRequiredMixin
 
 # --- Views para o Frontend ---
 
-class PlantListView(LoginRequiredMixin, PlantPrerequisitesMixin, ListView):
+class PlantListView(LoginRequiredMixin, ListView):
     # Não vamos mais usar o 'model' e 'queryset' padrão da ListView,
     # pois vamos construir nosso próprio contexto.
     template_name = 'plants/plant_list.html'
@@ -51,6 +51,13 @@ class PlantListView(LoginRequiredMixin, PlantPrerequisitesMixin, ListView):
             sorted_grouped['Sem Ambiente'] = unassigned_plants
         
         return sorted_grouped
+    
+    # Vamos adicionar o get_context_data de volta para a verificação no template
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['has_environments'] = Environment.objects.filter(user=self.request.user).exists()
+        context['has_stages_in_system'] = Stage.objects.exists()
+        return context
 
 class PlantDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Plant
@@ -60,7 +67,7 @@ class PlantDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         plant = self.get_object()
         return self.request.user == plant.user
 
-class PlantCreateView(LoginRequiredMixin, PlantPrerequisitesMixin, CreateView):
+class PlantCreateView(LoginRequiredMixin, StageExistsRequiredMixin, CreateView):
     model = Plant
     form_class = PlantForm
     template_name = 'plants/plant_form.html'
@@ -89,7 +96,7 @@ class PlantCreateView(LoginRequiredMixin, PlantPrerequisitesMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-class PlantUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class PlantUpdateView(LoginRequiredMixin, StageExistsRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Plant
     form_class = PlantForm
     template_name = 'plants/plant_form.html'

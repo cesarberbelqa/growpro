@@ -6,6 +6,7 @@ from .forms import EnvironmentForm
 from stage.models import Stage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from core.mixins import StageExistsRequiredMixin
 
 class EnvironmentListView(LoginRequiredMixin, ListView):
     model = Environment
@@ -22,7 +23,7 @@ class EnvironmentListView(LoginRequiredMixin, ListView):
         context['has_stages'] = Stage.objects.exists()
         return context
 
-class EnvironmentCreateView(LoginRequiredMixin, CreateView):
+class EnvironmentCreateView(LoginRequiredMixin, StageExistsRequiredMixin, CreateView):
     model = Environment
     form_class = EnvironmentForm
     template_name = 'environments/environment_form.html'
@@ -37,7 +38,7 @@ class EnvironmentCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-class EnvironmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class EnvironmentUpdateView(LoginRequiredMixin, StageExistsRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Environment
     form_class = EnvironmentForm
     template_name = 'environments/environment_form.html'

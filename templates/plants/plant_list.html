@@ -5,8 +5,26 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Minhas Plantas</h1>
-    <a href="{% url 'plants:create' %}" class="btn btn-primary">Adicionar Nova Planta</a>
+    {% if has_stages_in_system %}
+        <!-- Caso ideal: botão ativo -->
+        <a href="{% url 'plants:create' %}" class="btn btn-primary">Adicionar Nova Planta</a>
+    {% else %}
+        <!-- Caso contrário: botão desabilitado com a dica correta -->
+        <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="{{ tooltip_message }}">
+            <a class="btn btn-primary disabled" aria-disabled="true">Adicionar Nova Planta</a>
+        </span>
+    {% endif %}
 </div>
+
+{% if not has_stages_in_system %}
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Configuração Incompleta!</h4>
+        <p>Não há estágios de cultivo configurados no sistema. Nenhuma planta ou ambiente pode ser criado.</p>
+        <hr>
+        <p class="mb-0">Por favor, peça para o administrador do sistema cadastrar os estágios necessários.</p>
+    </div>
+{% endif %}
+
 
 {% for environment, plants_in_env in grouped_plants.items %}
     <div class="mb-5">
@@ -56,11 +74,13 @@
             {% endfor %}
         </div>
     </div>
-    {% empty %}
-        <div class="text-center p-5">
-            <h4>Nenhuma planta cadastrada ainda.</h4>
-            <p>Clique no botão "Adicionar Nova Planta" para começar.</p>
-        </div>
+    {% empty %}    
+        {% if has_stages_in_system %}
+            <div class="text-center p-5">
+                <h4>Nenhuma planta cadastrada ainda.</h4>
+                <p>Clique no botão "Adicionar Nova Planta" para começar.</p>
+            </div>
+        {% endif %}
     {% endfor %}
 {% endblock %}
 
