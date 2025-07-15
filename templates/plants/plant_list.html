@@ -7,6 +7,9 @@
     <h1>Minhas Plantas</h1>
     {% if has_stages_in_system %}
         <!-- Caso ideal: botão ativo -->
+        <a href="{% url 'plants:create' %}?action=germinate" class="btn btn-info">
+            <i class="fas fa-water"></i> Colocar para Germinar
+        </a>
         <a href="{% url 'plants:create' %}" class="btn btn-primary">Adicionar Nova Planta</a>
     {% else %}
         <!-- Caso contrário: botão desabilitado com a dica correta -->

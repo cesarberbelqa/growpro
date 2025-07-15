@@ -1,4 +1,4 @@
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse 
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views import View
@@ -15,6 +15,7 @@ from environment.models import Environment
 from core.mixins import StageExistsRequiredMixin
 from growth_history.models import GrowthHistory
 from django.utils import timezone
+from django.http import HttpResponseRedirect
 
 # --- Views para o Frontend ---
 
@@ -70,7 +71,7 @@ class PlantDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         plant = self.get_object()
         return self.request.user == plant.user
 
-class PlantCreateView(LoginRequiredMixin, StageExistsRequiredMixin, CreateView):
+class PlantCreateView(LoginRequiredMixin, CreateView):
     model = Plant
     form_class = PlantForm
     template_name = 'plants/plant_form.html'
@@ -80,24 +81,65 @@ class PlantCreateView(LoginRequiredMixin, StageExistsRequiredMixin, CreateView):
     # def dispatch(self, request, *args, **kwargs):
     #    ...
 
+    def get_initial(self):
+        """
+        Define os valores iniciais do formulário com base nos parâmetros da URL.
+        """
+        initial = super().get_initial()
+        action = self.request.GET.get('action')
+
+        if action == 'germinate':
+            # Tenta encontrar o estágio de "Germinação"
+            # Usamos icontains para ser flexível (Germinação, germinação, etc.)
+            germination_stage = Stage.objects.filter(tipo_estagio__icontains='germinação').first()
+            
+            if germination_stage:
+                initial['estagio_atual'] = germination_stage
+            
+            initial['observacoes'] = "Método: Água oxigenada 1%."
+        
+        return initial
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
     def form_valid(self, form):
+        """
+        Sobrescreve o form_valid para um controle explícito do salvamento e
+        da criação do histórico.
+        """
+        # Associa o usuário à instância do formulário, mas NÃO SALVA AINDA
         form.instance.user = self.request.user
-        return super().form_valid(form)
+        
+        # Salva o formulário e a instância da planta no banco de dados
+        # O objeto salvo é retornado para a variável self.object
+        self.object = form.save()
 
+        # Agora que a planta (self.object) está salva e tem um PK,
+        # podemos criar o histórico associado.
+        action = self.request.GET.get('action')
+        
+        if action == 'germinate':
+            GrowthHistory.objects.create(
+                user=self.request.user,
+                planta=self.object, # Usa self.object, que é a planta recém-criada
+                tipo_evento="Início da Germinação",
+                observacoes="Semente colocada na água 1% para germinar."
+            )
+            messages.success(self.request, f"Planta '{self.object.nome}' adicionada e germinação iniciada!")
+        else:
+            # Mensagem padrão para criação normal de planta
+            messages.success(self.request, f"Planta '{self.object.nome}' criada com sucesso!")
+
+        # Retorna o redirecionamento para a success_url definida na classe.
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
 
 class PlantUpdateView(LoginRequiredMixin, StageExistsRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Plant
