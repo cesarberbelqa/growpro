@@ -7,6 +7,17 @@ from datetime import timedelta
 class Plant(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='plants')
     nome = models.CharField(max_length=100)
+    especie = models.CharField(
+        max_length=100,
+        blank=True, # Torna o campo opcional no formulário
+        help_text="Ex: Sativa, Indica, Híbrida, Tomate Cereja, etc."
+    )
+    strain = models.CharField(
+        max_length=100,
+        blank=True, # Também opcional
+        verbose_name="Variedade/Strain",
+        help_text="Ex: Skunk #1, Runtz, Coração de Boi, etc."
+    )
     identificacao = models.CharField(max_length=50, help_text="Um ID único para a planta. Ex: SK-01")
     ambiente_atual = models.ForeignKey(
     'environment.Environment',

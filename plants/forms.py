@@ -7,7 +7,7 @@ from django.utils import timezone # <-- Adicione este import
 class PlantForm(forms.ModelForm):
     class Meta:
         model = Plant
-        fields = ['nome', 'identificacao', 'ambiente_atual', 'estagio_atual', 'data_plantio', 'observacoes']
+        fields = ['nome', 'especie', 'strain', 'identificacao', 'ambiente_atual', 'estagio_atual', 'data_plantio', 'observacoes']
         widgets = {
             'data_plantio': forms.DateInput(attrs={'type': 'date'}),
         }

@@ -9,7 +9,7 @@ class PlantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plant
         fields = [
-            'id', 'nome', 'identificacao', 'ambiente_atual', 
+            'id', 'nome', 'especie', 'strain', 'identificacao', 'ambiente_atual', 
             'estagio_atual', 'estagio_atual_nome', 'data_plantio', 'status', 'user', 
             'precisa_mudar_estagio'
         ]

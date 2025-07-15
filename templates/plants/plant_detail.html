@@ -21,6 +21,13 @@
                 <h5 class="card-title">Resumo da Planta</h5>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item ps-0"><strong>Status:</strong> <span class="badge bg-success">{{ plant.status }}</span></li>
+                    <li class="list-group-item ps-0">
+                        <strong>Espécie:</strong> {{ plant.especie|default:"Não informada" }}
+                    </li>
+                    <!-- EXIBINDO A STRAIN AQUI -->
+                    <li class="list-group-item ps-0">
+                        <strong>Variedade/Strain:</strong> {{ plant.strain|default:"Não informada" }}
+                    </li>
                     <li class="list-group-item ps-0"><strong>Data do Plantio:</strong> {{ plant.data_plantio|date:"d/m/Y" }}</li>
                     <li class="list-group-item ps-0">
                         <strong>Ambiente Atual:</strong> 

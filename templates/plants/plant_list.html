@@ -44,6 +44,15 @@
                             <h5 class="card-title">
                                 <a href="{{ plant.get_absolute_url }}">{{ plant.nome }}</a>
                             </h5>
+                            <!-- COMBINANDO ESPÉCIE E STRAIN -->
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                {{ plant.especie|default:"" }}
+                                {% if plant.especie and plant.strain %} - {% endif %}
+                                {{ plant.strain|default:"" }}
+                                {% if not plant.especie and not plant.strain %}
+                                    <span class="fst-italic">Informações não fornecidas</span>
+                                {% endif %}
+                            </h6>
                             <h6 class="card-subtitle mb-2 text-muted">{{ plant.identificacao }}</h6>
                             <p class="card-text mb-1">
                                 <strong>Estágio:</strong> {{ plant.estagio_atual.tipo_estagio }}
@@ -69,7 +78,7 @@
                                     <!-- Caso 2: Precisa mudar MAS não tem próximo estágio definido -->
                                     <div class="alert alert-warning p-2 small mt-2" role="alert">
                                         <i class="fas fa-clock"></i>
-                                        <strong>Atenção:</strong> Mudar estágio! (Final do ciclo)
+                                        <strong>Atenção:</strong> Hora de colher! (Final do ciclo)
                                     </div>
                                 {% endif %}
                             {% endif %}
